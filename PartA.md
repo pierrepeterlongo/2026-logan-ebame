@@ -22,11 +22,11 @@ The Short Read Archive is the central repository of all public sequencing data. 
 
 ![image](https://github.com/user-attachments/assets/a0a73965-5764-4dff-acba-71645dde48fc)
 
-We will focus here on a E. coli long-term evolution run, identifier *SRR2584403*, because it is small enough to test.
+We will focus here on an E. coli whole-genome sequencing run (Illumina NovaSeq, paired-end, study PRJEB45603), identifier *ERR10376822*, because it is small enough to test.
 
 ![image](https://github.com/user-attachments/assets/a4e931d7-35f5-420c-b2b4-1ef138ca9900)
 
-You may see some more information about the run (SRR2584403) by clicking on it. Head to the `Data access` tab to see how to download that run.
+You may see some more information about the run (ERR10376822) by clicking on it. Head to the `Data access` tab to see how to download that run.
 
 ![image](https://github.com/user-attachments/assets/d9e6c218-cb9b-4cf3-88e7-dc39a7f83cff)
 
@@ -41,8 +41,8 @@ To get the SRA file, look at the `SRA archive data` section and download any of 
 You may download using the first link by typing:
 
 ```bash
-wget https://sra-pub-run-odp.s3.amazonaws.com/sra/SRR2584403/SRR2584403
-mv SRR2584403 SRR2584403.sra
+wget https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR10376822/ERR10376822
+mv ERR10376822 ERR10376822.sra
 ```
 
 But, do not do this, see instead if you can download any of the other links.
@@ -51,24 +51,12 @@ Then once you have done the download, what you have is a file in the SRA (or SRA
 and type:
 
 ```bash
-fasterq-dump SRR2584403.sra
+fasterq-dump ERR10376822.sra
 ```
 
-If all went well, you should see files `SRR2584403_1.fastq` and `SRR2584403_2.fastq` in your folder (these are paired-end reads), around 700 MB each.
+If all went well, you should see files `ERR10376822_1.fastq` and `ERR10376822_2.fastq` in your folder (these are paired-end reads), around 60 MB each.
 
-You may attempt to download the data in the `Original format`, at location:
-
-```bash
-s3://sra-pub-src-8/SRR2584403/Ara-1_500gen_762B_R1.fastq.gz
-```
-
-by typing:
-
-```bash
-aws s3 cp s3://sra-pub-src-8/SRR2584403/Ara-1_500gen_762B_R1.fastq.gz . --no-sign-request
-```
-
-Although this is a S3 URL, try to download it, you'll likely get an error 403: Forbidden. Turns out the way to access this data is through `Cloud Data Delivery` which requires NCBI to retrieve it from cold storage, so it is not immediate.
+Note that this run was originally submitted to the European archive (ENA) as a CRAM file, so the `Original format` files are not available from SRA. For many other runs, they are stored on S3 (e.g. `s3://sra-pub-src-*/...`), but trying to download them usually gives an error 403: Forbidden. The way to access such data is through `Cloud Data Delivery`, which requires NCBI to retrieve it from cold storage, so it is not immediate.
 
 Now that you have `fastq` files, you may do any processing you like on those reads, e.g. assemble them or align them. But we won't do that in this tutorial, we will instead show you how to access
 this same accession using Logan instead.
@@ -76,7 +64,7 @@ this same accession using Logan instead.
 You may wonder if there was an easier way to get FASTQ files from SRA directly, as alluded above. There is. The `fasterq-dump` program also takes a run identifier as argument, so that if you type:
 
 ```bash
-fasterq-dump SRR2584403 --progress
+fasterq-dump ERR10376822 --progress
 ```
 
 It will find the location of the SRA file automatically, download it, convert it to FASTQ, and delete it, so that you end up with only the two FASTQ files. We did all the steps above to see what happened behind the scenes.
@@ -84,16 +72,16 @@ It will find the location of the SRA file automatically, download it, convert it
 
 ### 2. Accessing SRA data through Logan
 
-[Logan](https://github.com/IndexThePlanet/Logan/) has assembled all SRA data until late 2023, so this run `SRR2584403` is part of Logan. You may download the Logan assembly using this command:
+[Logan](https://github.com/IndexThePlanet/Logan/) has assembled all SRA data until late 2023, so this run `ERR10376822` is part of Logan. You may download the Logan assembly using this command:
 
 ```bash
-aws s3 cp s3://logan-pub/c/SRR2584403/SRR2584403.contigs.fa.zst . --no-sign-request
+aws s3 cp s3://logan-pub/c/ERR10376822/ERR10376822.contigs.fa.zst . --no-sign-request
 ```
 
 In case of `Could not connect to the endpoint URL` error (this is the case on the IFB VMs), use instead: 
 
 ```bash
-curl -LJO https://s3.amazonaws.com/logan-pub/c/SRR2584403/SRR2584403.contigs.fa.zst
+curl -LJO https://s3.amazonaws.com/logan-pub/c/ERR10376822/ERR10376822.contigs.fa.zst
 ```
 
 Now you have a FASTA file of the assembly of that run, compressed in Zstandard format.
@@ -109,35 +97,35 @@ If this doesn't work, install Zstd here: https://github.com/facebook/zstd/releas
 Then extract the assembly by typing:
 
 ```bash
-zstd -d SRR2584403.contigs.fa.zst
+zstd -d ERR10376822.contigs.fa.zst
 ```
 Now you have download your (first?) Logan assembly!
 
 You may quickly check some basic statistics about the assembly using Seqkit: https://github.com/shenwei356/seqkit/releases
 ```bash
-seqkit stats SRR2584403.contigs.fa -a
+seqkit stats ERR10376822.contigs.fa -a
 ```
 Should display:
 
-    file  format  type  num_seqs    sum_len  min_len  avg_len  max_len  Q1  Q2     Q3  sum_gap     N50  Q20(%)  Q30(%)  GC(%)
-    -     FASTA   DNA      1,297  4,556,063       31  3,512.8   81,999  32  57  1,015        0  22,171       0       0  50.72
+    file                    format  type  num_seqs    sum_len  min_len  avg_len  max_len   Q1     Q2     Q3  sum_gap    N50  N50_num  Q20(%)  Q30(%)  AvgQual  GC(%)  sum_n
+    ERR10376822.contigs.fa  FASTA   DNA      4,484  5,008,879       31  1,117.1   15,079  233  618.5  1,486        0  2,232      603       0       0        0  50.56      0
 
 
-**Q1 . Repeat the same experiment on unitigs for SRR2584403** 
+**Q1 . Repeat the same experiment on unitigs for ERR10376822** 
 
 <details><summary>Answer:</summary>
 <p>
 Download untigs: 
 
 ```bash
-aws s3 cp s3://logan-pub/u/SRR2584403/SRR2584403.unitigs.fa.zst . --no-sign-request
+aws s3 cp s3://logan-pub/u/ERR10376822/ERR10376822.unitigs.fa.zst . --no-sign-request
 ```
 
 <details><summary>On IFB VM:</summary>
 <p>
 
 ```bash
-curl -LJO https://s3.amazonaws.com/logan-pub/u/SRR2584403/SRR2584403.unitigs.fa.zst
+curl -LJO https://s3.amazonaws.com/logan-pub/u/ERR10376822/ERR10376822.unitigs.fa.zst
 ```
 
 </p>
@@ -145,15 +133,15 @@ curl -LJO https://s3.amazonaws.com/logan-pub/u/SRR2584403/SRR2584403.unitigs.fa.
 
 Decompress
 ```bash
-zstd -d SRR2584403.unitigs.fa.zst
+zstd -d ERR10376822.unitigs.fa.zst
 ```
 
 Quick stats: 
 ```bash
-seqkit stats SRR2584403.unitigs.fa -a
+seqkit stats ERR10376822.unitigs.fa -a
 ```
-    file                   format  type  num_seqs     sum_len  min_len  avg_len  max_len  Q1  Q2  Q3  sum_gap  N50  N50_num  Q20(%)  Q30(%)  AvgQual  GC(%)  sum_n
-    SRR2584403.unitigs.fa  FASTA   DNA    321,165  15,068,693       31     46.9    3,267  31  32  33        0   33    1,234       0       0        0  42.12      0
+    file                    format  type  num_seqs    sum_len  min_len  avg_len  max_len  Q1  Q2   Q3  sum_gap    N50  N50_num  Q20(%)  Q30(%)  AvgQual  GC(%)  sum_n
+    ERR10376822.unitigs.fa  FASTA   DNA     13,678  5,395,694       31    394.5   10,344  40  61  354        0  1,513      838       0       0        0  50.79      0
 
 
 </p>
@@ -164,7 +152,12 @@ seqkit stats SRR2584403.unitigs.fa -a
 
 Above we downloaded a small bacterial assembly. But, when it comes to bacterial isolates, it is actually not recommended to use Logan. A better resource is AllTheBacteria: https://allthebacteria.readthedocs.io/en/latest/
 
-Because it has bacterial assemblies that are of higher contiguity. Though, note that AllTheBacteria uses SRA sample identifiers (SAMxxxxxx), not run identifiers (SRRxxxxxx). Not to worry, you can find the sample identifier in the SRA page: https://trace.ncbi.nlm.nih.gov/Traces/?view=run_browser&acc=SRR2584403&display=metadata
+Because it has bacterial assemblies that are of higher contiguity. To illustrate this, we use here another E. coli run (from a long-term evolution experiment), *SRR2584403*, whose Logan contigs (`s3://logan-pub/c/SRR2584403/SRR2584403.contigs.fa.zst`) have these stats:
+
+    file                    format  type  num_seqs    sum_len  min_len  avg_len  max_len  Q1  Q2     Q3  sum_gap     N50  Q20(%)  Q30(%)  GC(%)
+    SRR2584403.contigs.fa   FASTA   DNA      1,297  4,556,063       31  3,512.8   81,999  32  57  1,015        0  22,171       0       0  50.72
+
+Note that AllTheBacteria uses SRA sample identifiers (SAMxxxxxx), not run identifiers (SRRxxxxxx). Not to worry, you can find the sample identifier in the SRA page: https://trace.ncbi.nlm.nih.gov/Traces/?view=run_browser&acc=SRR2584403&display=metadata
 
 ![image](https://github.com/user-attachments/assets/8fbecc76-2b98-4e63-8cb1-68524cf9edbb)
 
@@ -198,7 +191,7 @@ gives:
     SAMN04096045.fa  FASTA   DNA        118  4,544,381      202  38,511.7  348,273  1,034  14,303  46,440        0  110,753       0       0  50.72
 
 
-Notice how the N50 is greater when compared to unitigs, though the total lengths are about the same.
+Notice how the N50 is greater when compared to the Logan contigs of SRR2584403, though the total lengths are about the same.
 
 ### 4. Finding many SRA datasets
 
@@ -301,9 +294,9 @@ What have we seen?
 | 📚 Step                         | 📝 What you did                                                             |
 |  ------------------------------- | --------------------------------------------------------------------------- |
 | 🛠️ **seqkit install check**            | `seqkit --help` to confirm, install if missing                               | 
-| 🔍 **SRA deep-dive**            | Visited SRA page → located run **SRR2584403** → peeked at “Data access” tab |
-| ⬇️ **Grab raw SRA file**        | `wget`/`aws s3 cp` (learned about cold storage 403)                         |
-| 🔄 **Convert to FASTQ**         | `fasterq-dump SRR2584403.sra` (or run without pre-download)                 | 
+| 🔍 **SRA deep-dive**            | Visited SRA page → located run **ERR10376822** → peeked at “Data access” tab |
+| ⬇️ **Grab raw SRA file**        | `wget` the `.sra` file (original formats: cold storage, often 403)                  |
+| 🔄 **Convert to FASTQ**         | `fasterq-dump ERR10376822.sra` (or run without pre-download)                 | 
 | 🛰️ **Logan data**              | `aws s3 cp s3://logan-pub/...contigs.fa.zst` Logan ships assembled data      | 
 | 🎈 **Decompress + QC**          | `zstd -d` ➜ `seqkit stats -a`                                               | 
 | 🦠 **Better for bacteria?**     | Checked **AllTheBacteria**, higher contiguity                               |

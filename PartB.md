@@ -25,7 +25,7 @@ Logan Search lets you search up to **1 kb** of DNA/RNA and instantly identifies 
 
 ```bash
 # Example: extract 800 bp from the E.coli assembly from PartA
-seqkit subseq -r 1001:1800 SRR2584403.contigs.fa --quiet | seqkit seq -m 800 -w 0  | head -n 2 > query.fa
+seqkit subseq -r 1001:1800 ERR10376822.contigs.fa --quiet | seqkit seq -m 800 -w 0  | head -n 2 > query.fa
 ```
 
 What does the command above really do?
