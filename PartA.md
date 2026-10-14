@@ -99,13 +99,7 @@ aws s3 cp s3://logan-pub/c/ERR10376822/ERR10376822.contigs.fa.zst . --no-sign-re
 
 Now you have a FASTA file of the assembly of that run, compressed in Zstandard format.
 
-See if you have the `zstd` and `zstdcat` commands installed on your system by just typing:
-
-```bash
-zstdcat
-```
-
-Then extract the assembly by typing:
+In case you want to decompress the downloaded file:
 
 ```bash
 zstd -d ERR10376822.contigs.fa.zst
@@ -115,14 +109,14 @@ Now you have download your (first?) Logan assembly!
 You may quickly check some basic statistics about the assembly using Seqkit: https://github.com/shenwei356/seqkit/releases
 
 ```bash
-seqkit stats ERR10376822.contigs.fa -a
+seqkit stats ERR10376822.contigs.fa.zst -a
 ```
 
 Should display:
 
 ```bash
 file                    format  type  num_seqs    sum_len  min_len  avg_len  max_len   Q1     Q2     Q3  sum_gap    N50  N50_num  Q20(%)  Q30(%)  AvgQual  GC(%)  sum_n
-ERR10376822.contigs.fa  FASTA   DNA      4,484  5,008,879       31  1,117.1   15,079  233  618.5  1,486        0  2,232      667       0       0        0  50.56      0
+ERR10376822.contigs.fa.zst  FASTA   DNA      4,484  5,008,879       31  1,117.1   15,079  233  618.5  1,486        0  2,232      667       0       0        0  50.56      0
 ```
 
 **Q1 . Repeat the same experiment on unitigs for ERR10376822** 
@@ -137,7 +131,7 @@ aws s3 cp s3://logan-pub/u/ERR10376822/ERR10376822.unitigs.fa.zst . --no-sign-re
 </p>
 </details>
 
-Decompress
+Decompress (or not)
 ```bash
 zstd -d ERR10376822.unitigs.fa.zst
 ```
