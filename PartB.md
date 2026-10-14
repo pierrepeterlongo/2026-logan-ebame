@@ -42,22 +42,10 @@ What does the command above really do?
 
 But actually, let us not query that particular sequence, because E. coli is everywhere, there will be too many hits.
 
-Let us instead query this mysterious sequence:
+Let us instead query this mysterious sequence (with all default parameters):
 
 ```
-ATGAAGCATCTTATAGAAGTTTACATTGGAGACGAGCCTCTCGATGATATTGACCACTTGGGCCGCCGCC
-GTGTTCGTTCTGTTGGCGAACTTCTTACAAATCAGTTCAAGACAGCTTTTGCACGCATGGAGCGCATTGC
-AAAGGACCGCATGAACTTAAAGGAAACAGAAACTCTTAAGCCGGGCGACTTGATTTCTATAAAGCCGATT
-ATTTCTTCTATCCGTGAATTCTTTGGTTCAAGCCAGCTTTCGCAGTTCATGGATCAGTGTAATCCGCTTG
-CAGAACTTACTCACAAACGCCGTCTTAACGCATTAGGACCGGGAGGTCTTTCACGTGACAGGGCAGGTTT
-TGAAGTCCGCGATGTTCACTATACCCACTATGGACGAATGTGTCCTATTGAAACTCCTGAAGGTCCGAAC
-ATCGGTCTTATTGTTTCCCTTGCGATTTTTACCCGCGTAAATGAATACGGCTTCCTTGAAGAGCCTTACC
-GCAAAGTTGTAAACGGAAAAGCGACAAATGAAGTTGAATATCTTGATCCAATGGATGAAGATAAATATTA
-CATTGGACAGGTTACAGAAGGGATGAAGGCTGACGGCTCGTTCCCTACGGACTTGGTTTCTTGCCGCCAC
-CGTGGAGACTACACAAGCCGTTCTCCAAAAGATATTCAGTATATGGATGTTTCACCGCGTCAGGTAATTT
-CTGTTTCTGCTTCACTTGTTCCGTTCCTTGAGCATGACGATGCTAACCGCGCGTTGATGGGTTGTAACAT
-GCAGCGTCAGGCTGTTCCGCTTTTATTCCCGGAGCCTCCTCATGTTGGTACTGGCATGGAGCAGAAAACT
-GCTTACGATTCTGGAGTTCTTACAAAAGCCCGCCGTGCAGGAACTGTAAAATGGGTTGAA
+ATGATATTTTCAACTTTAGAGCATATATTACTTCATATATCCTTTTCGGTGGTTTCAATTGTAATTACAATTCAATTGATAACCTTGTTAGTCGATGAAATCATAGGACTATGTGATTCATCCGAAAAAGGGATGGTAGCGACTTTTTGCTGTATAACAGGATTATTAGTTACTCGTTGGATTTATTGGGGACATTTACCATTAAGTAATTTATATGAATCATTAATCTTTCTTTCATGGAGTTTCTCCATTATTTATATGGTTCCACTTTTTAAAAAATATAAAAACTATTTCAATGTAAACGTAATAACCGCGCCGAGTGTTAATTTTACCCAAGGTTTTGCTACTTCGGGTCTTTTAAATGAAATGAATCAATCCGAAATATTAGTACCCGCTCTTCAATCCCATTGGTTAATGATGCACGTAAGTATGATGGTATTGAGCTATGCAGCTCTTTTATGCGGATCATTATTATCACTAGCTCTTCTAGTCATTACATTTCGAAAATTCATAAGAATTCTTAGTCAAAGTAATAATTTAGTAAATGAGTCTTTTTCTTGGAGCGAGATTGAATACGTGAGAGAAAAAAAAAATATTTTACAAAAGACTTCTTTTCTTTCTTCTAGGAATTATTACAGGTTTCAATTGGTTCAACAATTGGATCTTTGGAGTTATCGTATTATTAGTCTAGGGTTTACCTTTTTAACCATAGGTATTCTTTCAGGCGCAGTATGGGCTAATGAAGCATGGGGATCCTATTGGAATTGGGATCCAAAGGAGACTTGGGCATTTATTACTTGGACCATATTTGCCATTTATTTACATACTAGAACAAATAAAAATTTTGAAAGCGTAAATTCCGCAATTGTAGCCTCGATAGGCTTTCTTATAATTTGGGTATGCTATTTTGGGGTTAATTTATTAGGAATAGGGTTGCATAGTTATGGTTTATTTCCTAATTGA
 ```
 
 
@@ -68,9 +56,9 @@ GCTTACGATTCTGGAGTTCTTACAAAAGCCCGCCGTGCAGGAACTGTAAAATGGGTTGAA
 1. Navigate to **<https://logan-search.org>**.  
 2. Click **“Submit a query”**.
 3. Under **Input**, choose **Text** (paste) *or* **File** (upload) and provide your sequence.  
-4. *(Optional)* adjust the sidebar settings (see table below).  
-
-5. Choose groups in which you want to search. **Pro tip** search `All no viral` instead of `all` groups for faster search. (Because search scales with number of SRA runs, and there are a lot of Covid19 runs.)
+4. *(Don't do this for this tutorial)* 
+ - adjust the sidebar settings (see table below).  
+ - Choose groups in which you want to search. **Pro tip** search `All no viral` instead of `all` groups for faster search. (Because search scales with number of SRA runs, and there are a lot of Covid19 runs.)
 6. Hit **Submit**. Wait about 5 minutes.
 
 ### Sidebar settings
@@ -97,8 +85,6 @@ Once Logan Search has finished searching (takes about 5 minutes), browse through
 
 The first tab, "Table", show the list of SRA accessions where the query sequence is present. 
 
-(non-contractual images) 
-
 ![image](assets/logan_list.png)
 
 Key columns are:
@@ -106,7 +92,6 @@ Key columns are:
 * `ID`: SRA accession 
 * `kmer_coverage`: ratio of the number of k-mers of the query are also present in the accession
 * `Refs`: provides the access to associated publication when public
-* `bto_id`: link to **OnToBee** ontology server
 * unitigs and contigs stats (nb sequences, cumulated size)
 * `location_*`: stats about experiments that fall in the same geographical location
 * All the other columns are from the [SRA metadata](https://www.ncbi.nlm.nih.gov/sra/docs/sra-cloud-based-metadata-table/)
@@ -202,11 +187,13 @@ To do this, click on the "BLAST-like alignment" tab:
 
 ![image](https://github.com/user-attachments/assets/64ff2f9d-d5b8-4582-b91e-ac7260374df0)
 
-**Q5.** How to compute an alignement with **contigs** of an accession sharing exactly 90% of the kmers with the query?
+**Q5.** How to compute an alignement with **contigs** of an accession sharing between 90% and 90.1% of the kmers with the query?
 
 
 <details><summary>Answer:</summary>
 <p>
+
+![logan_filter](assets/logan_filter.png)
 
 Filter the table, normaly, only accession SRR10076195 remains
 </p>
@@ -282,18 +269,9 @@ Then use a kmviz instance is now running at `http://localhost:8050/dashboard`
 
 ---
 
-## 5 . Download Assemblies for the Hits
+## 5 . Download assemblies and generalize alignments
 
-```bash
-cut -f1 <queryname>.tsv | tail -n +2 > hits.acc 
-# Fetch the top 25 hits using 4 parallel threads
-head -n 25 hits.acc | parallel -j4 '
-  aws s3 cp s3://logan-pub/c/{}/{}.contigs.fa.zst . --no-sign-request &&
-  zstd -d {}.contigs.fa.zst
-'
-```
-
-You now have contigs ready for alignment, variant calling, or pangenome analysis.
+See [partC](PartC.md)
 
 ---
 
