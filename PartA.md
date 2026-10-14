@@ -1,6 +1,14 @@
 ## Part A: Accessing Logan data
 
 ### 0. Preparation
+
+#### Use the following VM:
+From https://biosphere.france-bioinformatique.fr/catalogue/
+
+![](assets/vm1.png)
+![](assets/vm2.png)
+
+#### Setup the VM environment
 We will use some tools. Let's try an install with `pixi`
 ```bash
 # install pixi
