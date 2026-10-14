@@ -1,42 +1,61 @@
 ## Part A: Accessing Logan data
 
 ### 0. Preparation
-We will use seqkit and some SRA tools. Let's install them:
+We will use some tools. Let's try an install with `pixi`
 ```bash
-micromamba install bioconda::seqkit  bioconda::sra-tools awscli parallel --yes
-micromamba activate
+# install pixi
+curl -fsSL https://pixi.sh/install.sh | sh
+source .bashrc 
+
+# create your environment
+pixi init my_pixi_logan_env && cd my_pixi_logan_env
+
+# config channels
+pixi workspace channel add conda-forge
+pixi workspace channel add bioconda
+
+# add need tools
+pixi add seqkit sra-tools awscli s5cmd unzip
+
+# start a shell with your environment
+pixi shell
 ```
 
-To check if it is installed, run the command in a terminal.
-
+Test the installation
 ```bash
-seqkit --help
+aws --version
 ```
 
+Fix a network issue with aws: 
+```bash
+aws configure set region us-east-1
+```
 
 ---
 
 ### 1. Exploring an SRA accession
 
+```bash
+mkdir ~/logan_tutorial
+cd ~/logan_tutorial
+```
+
 The Short Read Archive is the central repository of all public sequencing data. Access it at this location: https://www.ncbi.nlm.nih.gov/sra
 
-![image](https://github.com/user-attachments/assets/a0a73965-5764-4dff-acba-71645dde48fc)
 
 We will focus here on an E. coli whole-genome sequencing run (Illumina NovaSeq, paired-end, study PRJEB45603), identifier *ERR10376822*, because it is small enough to test.
 
-![image](https://github.com/user-attachments/assets/a4e931d7-35f5-420c-b2b4-1ef138ca9900)
+![image](assets/sra_ERR10376822.png)
 
 You may see some more information about the run (ERR10376822) by clicking on it. Head to the `Data access` tab to see how to download that run.
 
-![image](https://github.com/user-attachments/assets/d9e6c218-cb9b-4cf3-88e7-dc39a7f83cff)
+![image](assets/sra_data_access.png)
 
 Now, how to download a FASTQ file using the command line? It is not immediate. One way to get a FASTQ file is to first get a SRA file and then convert that SRA file to FASTQ.
 
 There is an easier way, but for now we will go this route, because it will teach us important things about how to get data from the cloud.
 
 To get the SRA file, look at the `SRA archive data` section and download any of the files.
-
-![image](https://github.com/user-attachments/assets/0567c726-37f1-41bb-ade7-64c59df6eddc)
 
 You may download using the first link by typing:
 
@@ -45,10 +64,7 @@ wget https://sra-pub-run-odp.s3.amazonaws.com/sra/ERR10376822/ERR10376822
 mv ERR10376822 ERR10376822.sra
 ```
 
-But, do not do this, see instead if you can download any of the other links.
-
-Then once you have done the download, what you have is a file in the SRA (or SRAlite) format that needs to be converted to FASTQ. To do that, install the SRA toolkit https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit
-and type:
+Then once you have done the download, what you have is a file in the SRA (or SRAlite) format that needs to be converted to FASTQ. To do that, we use the SRA toolkit:
 
 ```bash
 fasterq-dump ERR10376822.sra
@@ -56,18 +72,21 @@ fasterq-dump ERR10376822.sra
 
 If all went well, you should see files `ERR10376822_1.fastq` and `ERR10376822_2.fastq` in your folder (these are paired-end reads), around 60 MB each.
 
-Note that this run was originally submitted to the European archive (ENA) as a CRAM file, so the `Original format` files are not available from SRA. For many other runs, they are stored on S3 (e.g. `s3://sra-pub-src-*/...`), but trying to download them usually gives an error 403: Forbidden. The way to access such data is through `Cloud Data Delivery`, which requires NCBI to retrieve it from cold storage, so it is not immediate.
 
-Now that you have `fastq` files, you may do any processing you like on those reads, e.g. assemble them or align them. But we won't do that in this tutorial, we will instead show you how to access
-this same accession using Logan instead.
 
-You may wonder if there was an easier way to get FASTQ files from SRA directly, as alluded above. There is. The `fasterq-dump` program also takes a run identifier as argument, so that if you type:
+There is an easier way to get FASTQ files from SRA directly, as alluded above. The `fasterq-dump` program also takes a run identifier as argument:
 
 ```bash
-fasterq-dump ERR10376822 --progress
+fasterq-dump ERR10376822 
 ```
 
-It will find the location of the SRA file automatically, download it, convert it to FASTQ, and delete it, so that you end up with only the two FASTQ files. We did all the steps above to see what happened behind the scenes.
+It will find the location of the SRA file automatically, download it, convert it to FASTQ, and delete the `.sra` file, so that you end up with only the two FASTQ files.
+
+---
+
+Now that you have `fastq` files, you may do any processing you like on those reads, e.g. assemble them or align them. But we won't do that in this tutorial, we will instead show you how to access this same accession using Logan instead.
+
+
 
 
 ### 2. Accessing SRA data through Logan
@@ -78,12 +97,6 @@ It will find the location of the SRA file automatically, download it, convert it
 aws s3 cp s3://logan-pub/c/ERR10376822/ERR10376822.contigs.fa.zst . --no-sign-request
 ```
 
-In case of `Could not connect to the endpoint URL` error (this is the case on the IFB VMs), use instead: 
-
-```bash
-curl -LJO https://s3.amazonaws.com/logan-pub/c/ERR10376822/ERR10376822.contigs.fa.zst
-```
-
 Now you have a FASTA file of the assembly of that run, compressed in Zstandard format.
 
 See if you have the `zstd` and `zstdcat` commands installed on your system by just typing:
@@ -91,8 +104,6 @@ See if you have the `zstd` and `zstdcat` commands installed on your system by ju
 ```bash
 zstdcat
 ```
-
-If this doesn't work, install Zstd here: https://github.com/facebook/zstd/releases
 
 Then extract the assembly by typing:
 
@@ -102,14 +113,17 @@ zstd -d ERR10376822.contigs.fa.zst
 Now you have download your (first?) Logan assembly!
 
 You may quickly check some basic statistics about the assembly using Seqkit: https://github.com/shenwei356/seqkit/releases
+
 ```bash
 seqkit stats ERR10376822.contigs.fa -a
 ```
+
 Should display:
 
-    file                    format  type  num_seqs    sum_len  min_len  avg_len  max_len   Q1     Q2     Q3  sum_gap    N50  N50_num  Q20(%)  Q30(%)  AvgQual  GC(%)  sum_n
-    ERR10376822.contigs.fa  FASTA   DNA      4,484  5,008,879       31  1,117.1   15,079  233  618.5  1,486        0  2,232      603       0       0        0  50.56      0
-
+```bash
+file                    format  type  num_seqs    sum_len  min_len  avg_len  max_len   Q1     Q2     Q3  sum_gap    N50  N50_num  Q20(%)  Q30(%)  AvgQual  GC(%)  sum_n
+ERR10376822.contigs.fa  FASTA   DNA      4,484  5,008,879       31  1,117.1   15,079  233  618.5  1,486        0  2,232      667       0       0        0  50.56      0
+```
 
 **Q1 . Repeat the same experiment on unitigs for ERR10376822** 
 
@@ -120,14 +134,6 @@ Download untigs:
 ```bash
 aws s3 cp s3://logan-pub/u/ERR10376822/ERR10376822.unitigs.fa.zst . --no-sign-request
 ```
-
-<details><summary>On IFB VM:</summary>
-<p>
-
-```bash
-curl -LJO https://s3.amazonaws.com/logan-pub/u/ERR10376822/ERR10376822.unitigs.fa.zst
-```
-
 </p>
 </details>
 
@@ -144,13 +150,11 @@ seqkit stats ERR10376822.unitigs.fa -a
     ERR10376822.unitigs.fa  FASTA   DNA     13,678  5,395,694       31    394.5   10,344  40  61  354        0  1,513      838       0       0        0  50.79      0
 
 
-</p>
-</details>
 
 
 ### 3. Quick note about bacterial data
 
-Above we downloaded a small bacterial assembly. But, when it comes to bacterial isolates, it is actually not recommended to use Logan. A better resource is AllTheBacteria: https://allthebacteria.readthedocs.io/en/latest/
+When it comes to bacterial isolates, it is actually not recommended to use Logan. A better resource is AllTheBacteria: https://allthebacteria.readthedocs.io/en/latest/
 
 Because it has bacterial assemblies that are of higher contiguity. To illustrate this, we use here another E. coli run (from a long-term evolution experiment), *SRR2584403*, whose Logan contigs (`s3://logan-pub/c/SRR2584403/SRR2584403.contigs.fa.zst`) have these stats:
 
@@ -165,16 +169,6 @@ Then you can download the AllTheBacteria assembly like this:
 ```bash
 aws s3 cp --no-sign-request s3://allthebacteria-assemblies/SAMN04096045.fa.gz .
 ```
-
-<details><summary>On IFB VM:</summary>
-<p>
-
-```bash
-curl -LJO allthebacteria-assemblies.s3.amazonaws.com/SAMN04096045.fa.gz
-```
-
-</p>
-</details>
 
 then 
 ```bash
@@ -221,6 +215,10 @@ grep -v "sra" SraAccList.csv | shuf | head -n 100 > ecoli.acc.txt
 ```
 A more advanced version of this section is available as an independent Logan tutorial: https://github.com/IndexThePlanet/Logan/blob/main/SRA_list.md
 
+
+<details><summary>Downloading many SRA datasets:</summary>
+<p>
+
 ### 5. Downloading many SRA datasets
 
 Now you have a truly random sample of E.coli accessions from the SRA. You could download them one by one:
@@ -247,18 +245,6 @@ for acc in $(cat ecoli.acc.txt); do
 done
 ```
 
-<details><summary>On IFB VM:</summary>
-<p>
-
-```bash
-for acc in $(cat ecoli.acc.txt); do 
-    echo $acc; 
-    curl -LJO https://s3.amazonaws.com/logan-pub/c/$acc/$acc.contigs.fa.zst
-done
-```
-
-</p>
-</details>
 
 You do not need to wait for this command to complete, because, how long do you think it will take? Around a few seconds per accession, and we have 100 accessions, so it will take a dozen minutes or so. I suggest that you interrupt it with Control+C. 
 
@@ -271,9 +257,6 @@ You may instead of doing a `for` loop, use the `parallel` program (https://ftp.g
 Try it, and stop it too with Control+C.
 
 
-<details><summary>Answer:</summary>
-<p>
-  
 ```bash
 parallel -j 4 --color  aws s3 cp s3://logan-pub/c/{}/{}.contigs.fa.zst . --no-sign-request ::: `cat ecoli.acc.txt`
 ```
@@ -283,25 +266,10 @@ Or, on IFB VMs:
 parallel -j 4 --color  curl -LJO https://s3.amazonaws.com/logan-pub/c/{}/{}.contigs.fa.zst ::: `cat ecoli.acc.txt`
 ```
 
+
+
 </p>
 </details>
-
-### 6. Recap
-
-What have we seen?
-
-
-| 📚 Step                         | 📝 What you did                                                             |
-|  ------------------------------- | --------------------------------------------------------------------------- |
-| 🛠️ **seqkit install check**            | `seqkit --help` to confirm, install if missing                               | 
-| 🔍 **SRA deep-dive**            | Visited SRA page → located run **ERR10376822** → peeked at “Data access” tab |
-| ⬇️ **Grab raw SRA file**        | `wget` the `.sra` file (original formats: cold storage, often 403)                  |
-| 🔄 **Convert to FASTQ**         | `fasterq-dump ERR10376822.sra` (or run without pre-download)                 | 
-| 🛰️ **Logan data**              | `aws s3 cp s3://logan-pub/...contigs.fa.zst` Logan ships assembled data      | 
-| 🎈 **Decompress + QC**          | `zstd -d` ➜ `seqkit stats -a`                                               | 
-| 🦠 **Better for bacteria?**     | Checked **AllTheBacteria**, higher contiguity                               |
-| 🔎 **Harvest 100 E. coli runs** | Export CSV from SRA → `grep` / `shuf` → `ecoli.acc.txt`                      | 
-| 📥 **Mass download**            | `for acc … aws s3 cp …` or `parallel -j 4`                                  |
 
 
 Now, let's move on to [Part B](PartB.md).
