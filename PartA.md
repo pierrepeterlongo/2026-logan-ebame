@@ -181,6 +181,9 @@ gives:
 
 Notice how the N50 is greater when compared to the Logan contigs of SRR2584403, though the total lengths are about the same.
 
+<details><summary>Many SRA datasets:</summary>
+<p>
+
 ### 4. Finding many SRA datasets
 
 Now, downloading a single SRA accession is neat, but what about many many runs? Let us download 100 E.coli assemblies. But how to find the corresponding runs?
@@ -210,8 +213,6 @@ grep -v "sra" SraAccList.csv | shuf | head -n 100 > ecoli.acc.txt
 A more advanced version of this section is available as an independent Logan tutorial: https://github.com/IndexThePlanet/Logan/blob/main/SRA_list.md
 
 
-<details><summary>Downloading many SRA datasets:</summary>
-<p>
 
 ### 5. Downloading many SRA datasets
 
