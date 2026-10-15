@@ -68,9 +68,85 @@ Results will be stored in directory `session_session_name`.
 <p>
 
 ```bash
- logan_blaster -s kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4
+ logan_blaster -s kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4 --limit 2
 ```
+(for the purpose of this tuto, we limit the analysis to the two best hits).
 
 Results will be stored in directory `session_kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4/`.
 </p>
 </details>
+
+---
+
+Explain the logs eg: 
+```bash
+[INFO] Coverage statistics for downloaded contigs (ERR1727496):
+  Number of sequences:          127384
+  Total length:                 39615525 bp
+  Mean coverage:                12.596
+  Median coverage (sequences):  3.700
+  Median coverage (bases):      4.600
+```
+
+and
+
+```bash
+[INFO] Coverage statistics for recruited contigs (ERR1727496):
+  Number of sequences:          21
+  Total length:                 46664 bp
+  Mean coverage:                36.983
+  Median coverage (sequences):  8.503
+  Median coverage (bases):      41.537
+```
+
+---
+Where are the dowloaded sequences?
+
+<details><summary>Answer:</summary>
+<p>
+
+In `session_kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4/logan_data/*.contigs.fa.zst `
+</p>
+</details>
+
+---
+
+Where are the dowloaded contigs among sequences, sharing similarity with the query?
+
+
+<details><summary>Answer:</summary>
+<p>
+
+In `session_kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4/logan_data/*.recruited_contigs.fa.zst `
+</p>
+</details>
+
+--- 
+
+Where are the alignements?
+<details><summary>Answer:</summary>
+<p>
+
+In `session_kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4/alignments/<myqueryname>_vs_ERR011184.txt`
+</p>
+</details>
+
+--- 
+
+Where are the synthese of alignments?
+<details><summary>Answer:</summary>
+<p>
+
+In `session_kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4/alignments/synth_<myqueryname>_vs_ERR011184.txt`
+</p>
+</details>
+
+---
+How to interpret such a synthesis?
+
+<details><summary>Answer:</summary>
+<p>
+Check https://github.com/pierrepeterlongo/logan_blaster/blob/main/README.md#synthesis-of-the-alignments
+</p>
+</details>
+
