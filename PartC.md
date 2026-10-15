@@ -121,6 +121,19 @@ In `session_kmviz-731f1aed-4c45-4473-a08a-5a6dafa3adc4/logan_data/*.recruited_co
 </p>
 </details>
 
+The recruited format is explained in this example
+
+```
+>DRR024392_74826 ka:f:61.428   L:-:4702013:-  L:+:1198012:-  2 0.20429
+
+"DRR024392_74826" accession_id 
+"ka:f:61.428" coverage (orginal data)
+"L:-:4702013:-  L:+:1198012:-" graph links
+    L:side:target:orientation
+"2" number of kmers exactly shared with the query (k being given as a parameter to logan_blaster)
+"0.20429"
+```
+
 --- 
 
 Where are the alignements?
